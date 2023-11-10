@@ -8,10 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +19,7 @@ public class BookService extends BookConnectionConfig implements BookRepository<
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BookService.class);
     List<Book> books = null;
+    Optional<Book> bookOptional = Optional.empty();
 
     @Override
     public List<Book> findAll() {
@@ -48,7 +46,29 @@ public class BookService extends BookConnectionConfig implements BookRepository<
 
     @Override
     public Optional<Book> findById(long id) {
-        return Optional.empty();
+        String sql = "SELECT book_id , title FROM tb_books WHERE book_id =?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)
+
+        ) {
+            preparedStatement.setLong(1, id);
+            methodAuxiliaryForPreparedStatement(preparedStatement);
+        } catch (SQLException e) {
+            LOGGER.error("Failed to connecting to DB {}", e.getMessage());
+        }
+        return bookOptional;
+    }
+
+    private void methodAuxiliaryForPreparedStatement(PreparedStatement preparedStatement) {
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            Book respBook = new Book();
+            if (resultSet.next()) {respBook.setBookId(resultSet.getLong("book_id"));}
+            respBook.setTitle(resultSet.getString("title"));
+            bookOptional = Optional.of(respBook);
+        } catch (SQLException ex) {
+            LOGGER.error("Failed to retrieve the data {}", ex.getMessage());
+        }
     }
 
 }

@@ -3,11 +3,10 @@ package com.code.vanilson.jpa.controller;
 import com.code.vanilson.jpa.model.Book;
 import com.code.vanilson.jpa.service.BookService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/books")
@@ -22,5 +21,15 @@ public class BookController {
     @GetMapping
     public ResponseEntity<List<Book>> listAllBooks() {
         return ResponseEntity.ok().body(bookService.findAll());
+    }
+
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<Optional<Book>> findBookById(@PathVariable Long id) {
+        Optional<Book> book = bookService.findById(id);
+        if (book.isPresent()) {
+            return ResponseEntity.ok()
+                    .body(book);
+        }
+        return ResponseEntity.notFound().build();
     }
 }

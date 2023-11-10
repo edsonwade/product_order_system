@@ -2,6 +2,7 @@ package com.code.vanilson.jpa.controller;
 
 import com.code.vanilson.jpa.model.Book;
 import com.code.vanilson.jpa.service.BookService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,5 +32,14 @@ public class BookController {
                     .body(book);
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping(value = "/create")
+    public ResponseEntity<Book> createNewBook(@RequestBody Book book) {
+        Book books = bookService.create(book);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(books);
+
     }
 }

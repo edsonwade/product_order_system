@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotNull;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,10 @@ import java.util.Optional;
 public class BookService extends BookConnectionConfig implements BookRepository<Book> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BookService.class);
+    public static final String BOOK_ID = "book_id";
+    public static final String TITLE = "title";
     List<Book> books = null;
+
     Optional<Book> bookOptional = Optional.empty();
 
     @Override
@@ -33,8 +37,8 @@ public class BookService extends BookConnectionConfig implements BookRepository<
 
             while (resultSet.next()) {
                 Book book = new Book();
-                book.setBookId(resultSet.getLong("book_id"));
-                book.setTitle(resultSet.getString("title"));
+                book.setBookId(resultSet.getLong(BOOK_ID));
+                book.setTitle(resultSet.getString(TITLE));
                 books.add(book);
             }
 
@@ -60,11 +64,37 @@ public class BookService extends BookConnectionConfig implements BookRepository<
         return bookOptional;
     }
 
+    @Override
+    public Book create(@NotNull Book book) {
+
+        String sql = "INSERT INTO tb_books(title)VALUES(?)";
+
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        ) {
+
+            preparedStatement.setString(1, TITLE);
+            preparedStatement.executeUpdate();
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    book.setBookId(resultSet.getLong(BOOK_ID));
+                }
+
+            }
+
+        } catch (SQLException e) {
+            LOGGER.error("Cannot connecting :{}", e.getMessage());
+        }
+        return book;
+
+    }
+
     private void methodAuxiliaryForPreparedStatement(PreparedStatement preparedStatement) {
         try (ResultSet resultSet = preparedStatement.executeQuery()) {
             Book respBook = new Book();
-            if (resultSet.next()) {respBook.setBookId(resultSet.getLong("book_id"));}
-            respBook.setTitle(resultSet.getString("title"));
+            if (resultSet.next()) {respBook.setBookId(resultSet.getLong(BOOK_ID));}
+            respBook.setTitle(resultSet.getString(TITLE));
             bookOptional = Optional.of(respBook);
         } catch (SQLException ex) {
             LOGGER.error("Failed to retrieve the data {}", ex.getMessage());

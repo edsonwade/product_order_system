@@ -7,7 +7,10 @@
 .idea/
 *.iml
 *.iws
+.env
+docker.txt
 src/main/resources/application.properties
+src/main/java/com/code/vanilson/jpa/config
 
 
 # Mac

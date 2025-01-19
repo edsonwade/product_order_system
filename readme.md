@@ -139,7 +139,7 @@ Below is a representation of the system architecture (replace with the actual di
 
 **Example 2**: Place an Order
 1. User sends a POST /orders request with the product details.
-2, The Order Service processes the request and emits an event using Kafka.
+2. The Order Service processes the request and emits an event using Kafka.
 3. Other services (e.g., Inventory Service) consume the event to update stock.
 ---
 
